@@ -1,5 +1,4 @@
-from collections import deque
-from collections import defaultdict
+from collections import deque, defaultdict, OrderedDict
 """
 Simple graph implementation
 """
@@ -57,3 +56,22 @@ class Graph:
                     helper(neighbor)
 
         helper(start)
+
+    def bfs(self, start, end):
+        visited = OrderedDict()
+        q = deque()
+        q.appendleft((None, start))
+        while q:
+            (v1, v2) = q.pop()
+            if visited.get(v2) is None:
+                visited[v2] = v1
+                if v2 == end:
+                    path = deque()
+                    current = v2
+                    while current is not None:
+                        path.appendleft(current)
+                        current = visited[current]
+                    return list(path)
+
+                for vertex in self.edges[v2]:
+                    q.appendleft((v2, vertex))
