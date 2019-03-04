@@ -53,14 +53,14 @@ class SocialGraph:
 
         ids = [id for id in self.users.keys()]
 
-        for id in ids:
-            num_friends = range(int(gauss(avgFriendships, avgFriendships)))
-            for _ in num_friends:
-                friend_id = id
-                while friend_id is id:
-                    index = randrange(len(ids))
-                    friend_id = ids[index]
-                self.addFriendship(id, friend_id)
+        num_friends = avgFriendships * numUsers
+        for _ in range(num_friends):
+            num1 = randrange(len(ids))
+            num2 = num1
+            while num1 == num2:
+                num2 = randrange(len(ids))
+
+            self.addFriendship(ids[num1], ids[num2])
 
         print(self.users)
         print(self.friendships)
