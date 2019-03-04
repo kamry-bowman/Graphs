@@ -1,4 +1,5 @@
-from random import gauss, randrange
+from random import randrange
+from collections import deque
 from names import get_full_name
 
 
@@ -75,7 +76,25 @@ class SocialGraph:
         The key is the friend's ID and the value is the path.
         """
         visited = {}  # Note that this is a dictionary, not a set
-        # !!!! IMPLEMENT ME
+
+        queue = deque()
+        visited[userID] = []
+        for friend_id in self.friendships[userID]:
+            queue.appendleft((userID, friend_id))
+
+        while queue:
+            v1, v2 = queue.pop()
+            if visited.get(v2) is None:
+                # if not, add to visited dict, using tuple and visited dict to construct friendship path
+                visited[v2] = visited[v1] + [v1]
+
+                # if not, add all friends edges to queue in the form of a tuple (currentID, friendID)
+                for friend_id in self.friendships[v2]:
+                    queue.appendleft((v2, friend_id))
+
+        for key in visited:
+            visited[key].append(key)
+
         return visited
 
 
@@ -83,5 +102,5 @@ if __name__ == '__main__':
     sg = SocialGraph()
     sg.populateGraph(10, 2)
     print(sg.friendships)
-    # connections = sg.getAllSocialPaths(1)
-    # print(connections)
+    connections = sg.getAllSocialPaths(1)
+    print(connections)
