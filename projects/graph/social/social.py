@@ -1,8 +1,11 @@
+from random import gauss, randrange
+from names import get_full_name
 
 
 class User:
     def __init__(self, name):
         self.name = name
+
 
 class SocialGraph:
     def __init__(self):
@@ -44,11 +47,23 @@ class SocialGraph:
         self.lastID = 0
         self.users = {}
         self.friendships = {}
-        # !!!! IMPLEMENT ME
 
-        # Add users
+        for _ in range(numUsers):
+            self.addUser(get_full_name())
 
-        # Create friendships
+        ids = [id for id in self.users.keys()]
+
+        for id in ids:
+            num_friends = range(int(gauss(avgFriendships, avgFriendships)))
+            for _ in num_friends:
+                friend_id = id
+                while friend_id is id:
+                    index = randrange(len(ids))
+                    friend_id = ids[index]
+                self.addFriendship(id, friend_id)
+
+        print(self.users)
+        print(self.friendships)
 
     def getAllSocialPaths(self, userID):
         """
@@ -68,5 +83,5 @@ if __name__ == '__main__':
     sg = SocialGraph()
     sg.populateGraph(10, 2)
     print(sg.friendships)
-    connections = sg.getAllSocialPaths(1)
-    print(connections)
+    # connections = sg.getAllSocialPaths(1)
+    # print(connections)
