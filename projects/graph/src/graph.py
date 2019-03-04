@@ -75,3 +75,22 @@ class Graph:
 
                 for vertex in self.edges[v2]:
                     q.appendleft((v2, vertex))
+
+    def dfs(self, start, end):
+        visited = OrderedDict()
+        s = []
+        s.append((None, start))
+        while s:
+            (v1, v2) = s.pop()
+            if visited.get(v2) is None:
+                visited[v2] = v1
+                if v2 == end:
+                    path = deque()
+                    current = v2
+                    while current is not None:
+                        path.appendleft(current)
+                        current = visited[current]
+                    return list(path)
+
+                for vertex in self.edges[v2]:
+                    s.append((v2, vertex))
