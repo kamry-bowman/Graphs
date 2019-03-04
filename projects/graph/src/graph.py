@@ -45,3 +45,15 @@ class Graph:
                 print(current)
                 for vertex in self.edges[current]:
                     s.append(vertex)
+
+    def dft_recursive(self, start):
+        visited = set()
+
+        def helper(vertex):
+            if vertex not in visited:
+                visited.add(vertex)
+                print(vertex)
+                for neighbor in self.edges[vertex]:
+                    helper(neighbor)
+
+        helper(start)
