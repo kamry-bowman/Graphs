@@ -65,6 +65,7 @@ class Graph:
             (v1, v2) = q.pop()
             if visited.get(v2) is None:
                 visited[v2] = v1
+                # when target is found, retrace steps using visited dict
                 if v2 == end:
                     path = deque()
                     current = v2

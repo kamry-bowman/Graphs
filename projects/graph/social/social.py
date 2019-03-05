@@ -3,6 +3,13 @@ from collections import deque
 from names import get_full_name
 
 
+def combinations(n, k):
+    total = 1
+    for i in range(1, k + 1):
+        total *= (n + 1 - i) / i
+    return int(total)
+
+
 class User:
     def __init__(self, name):
         self.name = name
@@ -54,17 +61,35 @@ class SocialGraph:
 
         ids = [id for id in self.users.keys()]
 
-        num_friends = avgFriendships * numUsers
-        for _ in range(num_friends):
-            num1 = randrange(len(ids))
-            num2 = num1
-            while num1 == num2:
-                num2 = randrange(len(ids))
+        num_friendships = (avgFriendships * numUsers) // 2
+        original_possibilities = combinations(numUsers, 2) - 1
+        remaining_possibilities = original_possibilities
+        picked = []
 
-            self.addFriendship(ids[num1], ids[num2])
+        while len(picked) < num_friendships:
+            candidate = randrange(remaining_possibilities)
+            drop = len(picked)
 
-        print(self.users)
-        print(self.friendships)
+            for i in range(len(picked)):
+                if candidate >= picked[i]:
+                    candidate += 1
+                else:
+                    drop = i
+                    break
+
+            picked.insert(drop, candidate)
+            remaining_possibilities -= 1
+
+        for pointer in picked:
+            segment = len(ids) - 1
+            while pointer > segment:
+                pointer = pointer - segment
+                segment -= 1
+
+            first_id_index = len(ids) - 1 - segment
+            second_id_index = first_id_index + pointer
+
+            self.addFriendship(ids[first_id_index], ids[second_id_index])
 
     def getAllSocialPaths(self, userID):
         """
@@ -97,10 +122,32 @@ class SocialGraph:
 
         return visited
 
+    def stats(self):
+        total_friends = 0
+
+        avg_degs = 0
+
+        for id in self.users:
+            user = self.users[id]
+            network = self.getAllSocialPaths(id)
+            degs = 0
+            for friend in network:
+                degs += len(network[friend])
+            avg_degs += degs / len(network)
+            total_friends += len(network)
+
+            # print(f'{user.name} has {len(network)} friends in extended network')
+
+        print(
+            f'Average user has {total_friends / len(self.users)} in extended network')
+        print(
+            f'Average user has average {avg_degs / len(self.users)} degrees of separation')
+
 
 if __name__ == '__main__':
     sg = SocialGraph()
-    sg.populateGraph(10, 2)
+    sg.populateGraph(1000, 5)
     print(sg.friendships)
-    connections = sg.getAllSocialPaths(1)
-    print(connections)
+    sg.stats()
+    # connections = sg.getAllSocialPaths(1)
+    # print(connections)
