@@ -1,6 +1,7 @@
 from random import randrange
 from collections import deque
 from names import get_full_name
+from datetime import datetime
 
 
 def combinations(n, k):
@@ -62,12 +63,11 @@ class SocialGraph:
         ids = [id for id in self.users.keys()]
 
         num_friendships = (avgFriendships * numUsers) // 2
-        original_possibilities = combinations(numUsers, 2) - 1
-        remaining_possibilities = original_possibilities
+        possibilities = combinations(numUsers, 2) - 1
         picked = []
 
         while len(picked) < num_friendships:
-            candidate = randrange(remaining_possibilities)
+            candidate = randrange(possibilities)
             drop = len(picked)
 
             for i in range(len(picked)):
@@ -78,16 +78,16 @@ class SocialGraph:
                     break
 
             picked.insert(drop, candidate)
-            remaining_possibilities -= 1
+            possibilities -= 1
 
         for pointer in picked:
             segment = len(ids) - 1
-            while pointer > segment:
+            while pointer >= segment:
                 pointer = pointer - segment
                 segment -= 1
 
             first_id_index = len(ids) - 1 - segment
-            second_id_index = first_id_index + pointer
+            second_id_index = first_id_index + 1 + pointer
 
             self.addFriendship(ids[first_id_index], ids[second_id_index])
 
@@ -145,9 +145,30 @@ class SocialGraph:
 
 
 if __name__ == '__main__':
-    sg = SocialGraph()
-    sg.populateGraph(1000, 5)
-    print(sg.friendships)
-    sg.stats()
+    ns = []
+    times = []
+    for n in range(100, 500, 100):
+        sg = SocialGraph()
+        timestart = datetime.now().timestamp()
+        sg.populateGraph(n, 4)
+        ns.append(n)
+        times.append(datetime.now().timestamp() - timestart)
+    for n in range(1000, 3001, 1000):
+        sg = SocialGraph()
+        timestart = datetime.now().timestamp()
+        sg.populateGraph(n, 4)
+        ns.append(n)
+        times.append(datetime.now().timestamp() - timestart)
+    for n in range(3000, 10001, 3000):
+        sg = SocialGraph()
+        timestart = datetime.now().timestamp()
+        sg.populateGraph(n, 4)
+        ns.append(n)
+        times.append(datetime.now().timestamp() - timestart)
+    for n in ns:
+        print(n)
+    for time in times:
+        print(time)
+
     # connections = sg.getAllSocialPaths(1)
     # print(connections)
