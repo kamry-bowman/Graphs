@@ -31,6 +31,8 @@ def find_route(player):
         'w': 'e'
     }
 
+    steps = []
+
     def move(dir):
         """moves the player in the indicated direction. Adds new rooms to graph if needed,
         and updates prior and current rooms' graph data with each others' info"""
@@ -38,14 +40,15 @@ def find_route(player):
         prior_room = player.currentRoom
 
         player.travel(dir)
+        steps.append(dir)
 
         new_room = player.currentRoom
 
         # if this is a new room, initialize graph with its information
         if graph.get(new_room.id) is None:
             graph[new_room.id] = {}
-            for dir in new_room.getExits():
-                graph[new_room.id][dir] = '?'
+            for opt in new_room.getExits():
+                graph[new_room.id][opt] = '?'
 
         graph[prior_room.id][dir] = new_room.id
         graph[new_room.id][rev_dir[dir]] = prior_room.id
@@ -59,19 +62,20 @@ def find_route(player):
         while not found and q:
             # grab off right side of queue
             step = q.pop()
-            current = graph[step.room][step.dir]
+            current_id = graph[step.room][step.dir] if step.dir else step.room
             # only process if current room has not already been visited
-            if visited.get(current.id) is None:
+            if visited.get(current_id) is None:
                 # add this room to visited dict with value as the direction moved
                 # to get there
-                visited[current.id] = step
+                visited[current_id] = step
                 # add all movable directions from this room to queue
+                current = graph[current_id]
                 for opt in current:
                     if current[opt] == '?':
                         found = opt
                         break
                     else:
-                        q.appendleft(Step(room=current.id, dir=opt))
+                        q.appendleft(Step(room=current_id, dir=opt))
         if found:
             path = deque()
             path.appendleft(found)
@@ -87,7 +91,6 @@ def find_route(player):
         else:
             return None
 
-    stop = False
     # initialize graph with first room
     initial_room = player.currentRoom
     graph[initial_room.id] = {}
@@ -95,12 +98,13 @@ def find_route(player):
         graph[initial_room.id][dir] = '?'
 
     # central loop, will continue until finished
+    stop = False
     while not stop:
         # get players current room
         room = player.currentRoom
 
         # loop over ? directions in current room we're in, if there is a ?, go there
-        for dir, id in room.getExits().items():
+        for dir, id in graph[room.id].items():
             if id == '?':
                 move(dir)
                 break
@@ -110,17 +114,21 @@ def find_route(player):
             path = find_nearest_unvisited()
             if path is not None:
                 for i in range(len(path) - 1):
-                    player.travel(dir[i])
+                    move(dir[i])
                 move(path[-1])
             else:
                 stop = True
 
+    return steps
 
-# world.printRooms()
+
+world.printRooms()
 
 
 # FILL THIS IN
-traversalPath = ['n', 's']
+traversalPath = find_route(player)
+print(traversalPath)
+# traversalPath = ['n', 's']
 visited_rooms = set()
 player.currentRoom = world.startingRoom
 visited_rooms.add(player.currentRoom)
