@@ -1,8 +1,20 @@
+from random import randrange
+from collections import deque
+from names import get_full_name
+from datetime import datetime
+
+
+def combinations(n, k):
+    total = 1
+    for i in range(1, k + 1):
+        total *= (n + 1 - i) / i
+    return int(total)
 
 
 class User:
     def __init__(self, name):
         self.name = name
+
 
 class SocialGraph:
     def __init__(self):
@@ -44,11 +56,40 @@ class SocialGraph:
         self.lastID = 0
         self.users = {}
         self.friendships = {}
-        # !!!! IMPLEMENT ME
 
-        # Add users
+        for _ in range(numUsers):
+            self.addUser(get_full_name())
 
-        # Create friendships
+        ids = [id for id in self.users.keys()]
+
+        num_friendships = (avgFriendships * numUsers) // 2
+        possibilities = combinations(numUsers, 2) - 1
+        picked = []
+
+        while len(picked) < num_friendships:
+            candidate = randrange(possibilities)
+            drop = len(picked)
+
+            for i in range(len(picked)):
+                if candidate >= picked[i]:
+                    candidate += 1
+                else:
+                    drop = i
+                    break
+
+            picked.insert(drop, candidate)
+            possibilities -= 1
+
+        for pointer in picked:
+            segment = len(ids) - 1
+            while pointer >= segment:
+                pointer = pointer - segment
+                segment -= 1
+
+            first_id_index = len(ids) - 1 - segment
+            second_id_index = first_id_index + 1 + pointer
+
+            self.addFriendship(ids[first_id_index], ids[second_id_index])
 
     def getAllSocialPaths(self, userID):
         """
@@ -60,13 +101,74 @@ class SocialGraph:
         The key is the friend's ID and the value is the path.
         """
         visited = {}  # Note that this is a dictionary, not a set
-        # !!!! IMPLEMENT ME
+
+        queue = deque()
+        visited[userID] = []
+        for friend_id in self.friendships[userID]:
+            queue.appendleft((userID, friend_id))
+
+        while queue:
+            v1, v2 = queue.pop()
+            if visited.get(v2) is None:
+                # if not, add to visited dict, using tuple and visited dict to construct friendship path
+                visited[v2] = visited[v1] + [v1]
+
+                # if not, add all friends edges to queue in the form of a tuple (currentID, friendID)
+                for friend_id in self.friendships[v2]:
+                    queue.appendleft((v2, friend_id))
+
+        for key in visited:
+            visited[key].append(key)
+
         return visited
+
+    def stats(self):
+        total_friends = 0
+
+        avg_degs = 0
+
+        for id in self.users:
+            user = self.users[id]
+            network = self.getAllSocialPaths(id)
+            degs = 0
+            for friend in network:
+                degs += len(network[friend])
+            avg_degs += degs / len(network)
+            total_friends += len(network)
+
+            # print(f'{user.name} has {len(network)} friends in extended network')
+
+        print(
+            f'Average user has {total_friends / len(self.users)} in extended network')
+        print(
+            f'Average user has average {avg_degs / len(self.users)} degrees of separation')
 
 
 if __name__ == '__main__':
-    sg = SocialGraph()
-    sg.populateGraph(10, 2)
-    print(sg.friendships)
-    connections = sg.getAllSocialPaths(1)
-    print(connections)
+    ns = []
+    times = []
+    for n in range(100, 500, 100):
+        sg = SocialGraph()
+        timestart = datetime.now().timestamp()
+        sg.populateGraph(n, 4)
+        ns.append(n)
+        times.append(datetime.now().timestamp() - timestart)
+    for n in range(1000, 3001, 1000):
+        sg = SocialGraph()
+        timestart = datetime.now().timestamp()
+        sg.populateGraph(n, 4)
+        ns.append(n)
+        times.append(datetime.now().timestamp() - timestart)
+    for n in range(3000, 10001, 3000):
+        sg = SocialGraph()
+        timestart = datetime.now().timestamp()
+        sg.populateGraph(n, 4)
+        ns.append(n)
+        times.append(datetime.now().timestamp() - timestart)
+    for n in ns:
+        print(n)
+    for time in times:
+        print(time)
+
+    # connections = sg.getAllSocialPaths(1)
+    # print(connections)

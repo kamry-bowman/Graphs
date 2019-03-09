@@ -5,6 +5,9 @@ name = "pypi"
 
 [packages]
 bokeh = "*"
+pylint = "*"
+autopep8 = "*"
+names = "*"
 
 [dev-packages]
 
